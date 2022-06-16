@@ -1,0 +1,17 @@
+{
+    "component": {
+        "outDir": "./test/components/",
+        "wrapNamespace": true,
+        "style": "scss",
+        "forwardRef": true,
+        "time": true,
+        "baseElement": "div",
+        "indexPath": "./test/index.ts"
+    },
+    "page": {
+        "outDir": "./src/page",
+        "style": "scss",
+        "time": true
+    },
+    "author": "shepard"
+}

@@ -1,0 +1,43 @@
+{
+  "name": "react-gen",
+  "version": "1.0.0",
+  "description": "A CLI component generator for React.js",
+  "main": "./dist/index.js",
+  "type": "commonjs",
+  "bin": {
+    "react-gen": "./dist/index.js",
+    "rg": "./dist/index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsc -p . && node ./dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shepard-liu/react-gen.git"
+  },
+  "keywords": [
+    "Generator",
+    "Component",
+    "React"
+  ],
+  "author": "shepard-liu",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/shepard-liu/react-gen/issues"
+  },
+  "engines": {
+    "node": ">=14.16"
+  },
+  "homepage": "https://github.com/shepard-liu/react-gen#readme",
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "commander": "^9.3.0",
+    "enquirer": "^2.3.6"
+  },
+  "devDependencies": {
+    "@types/chalk": "^2.2.0",
+    "@types/node": "^17.0.42"
+  },
+  "react-gen": {}
+}
