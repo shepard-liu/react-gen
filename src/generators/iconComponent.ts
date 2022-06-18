@@ -25,8 +25,8 @@ export function generateIconComponent({
     const iconImports = icons.map((i, idx) => `import _${idx} from '${importDir}/${i}';`).join('\n');
     const lazyIconImports = lazyIcons.map((i, idx) => `const _${idx}_lz = React.lazy(() => import('${importDir}/${i}'));`).join('\n');
     let iconMapKeys: string =
-        icons.map((i, idx) => `"${i}": _${idx},`).join('\n') +
-        lazyIcons.map((i, idx) => `"${i}": _${idx}_lz,`).join('\n');
+        icons.map((i, idx) => `    "${i}": _${idx},`).join('\n') + '\n' +
+        lazyIcons.map((i, idx) => `    "${i}": _${idx}_lz,`).join('\n');
 
     const propsExtends = " extends React.ComponentPropsWithRef<'svg'>";
 
@@ -34,7 +34,8 @@ export function generateIconComponent({
         ? ''
         : `\
 export interface ${componentName}Props${propsExtends} {
-    children: string;
+    icon: keyof typeof iconMap;
+    children?: null | undefined;
 }
 `;
 
@@ -42,7 +43,8 @@ export interface ${componentName}Props${propsExtends} {
         ? `\
 export namespace ${componentName} {
     export interface Props${propsExtends} {
-        children: string;
+        icon: keyof typeof iconMap;
+        children?: null | undefined;
     }
 }
 `
@@ -81,24 +83,20 @@ ${lazyIconImports}
 
 // Build icon map
 const iconMap = {
-    ${iconMapKeys}
- };
+${iconMapKeys}
+};
 
 ${propsInterface}\
 export const ${componentName} = React.forwardRef<SVGSVGElement, ${propsInterfaceName}>(({
-    children, className = '', style, ...otherProps
+    icon, className = '', ...otherProps
 }, ref) => {
 
-    // Validate props "children"
-    if (typeof children !== 'string')
-        throw new Error("[${componentName}] Invalid child type. Use icon name string to access icons.");
-
     // Access the icon component in the object map
-    const IconComponent = iconMap[children] || __missing;
+    const IconComponent = iconMap[icon] || __missing;
 
     return (
         <Suspense fallback={<__loading data-icon-name='__loading' className={\`${cssClass} \${className}\`} />}>
-            <IconComponent data-icon-name={children} className={\`${cssClass} \${className}\`} {...otherProps} ref={ref} />
+            <IconComponent data-icon-name={icon} className={\`${cssClass} \${className}\`} {...otherProps} ref={ref} />
         </Suspense>
     );
 })

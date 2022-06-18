@@ -28,6 +28,7 @@ export interface ComponentCommandOptionType {
     author: string,
     descrip: string,
     time: boolean,
+    styleFilename: string,
     indexPath: string,
 }
 

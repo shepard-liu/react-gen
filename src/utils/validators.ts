@@ -290,7 +290,7 @@ export function parseReplaceFilenameRulesOption(replaceFilenameRules: any): { fr
             });
         } catch (err) {
             console.log(err);
-            error(`Invalid regular expression ${elem.from}.`);
+            error(`Invalid regular expression '${elem.from}'.`);
             exit(-1);
         }
     }

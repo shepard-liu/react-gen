@@ -46,6 +46,7 @@ import iconHandler from './commands/icon';
         .option(`-b --baseElement <element>`, `The base element of the component`)
         .option(`-w --wrapNamespace`, `Will export a typescript namespace with the same name in the component module.`)
         .option(`-s --style <scss|css|less|none>`, `Specify CSS preprocessor type.`)
+        .option(`--styleFilename <name>`, "Customize the stylesheet filename(extension not included). '$component' can be used to interpolate the component name.")
         .option(`-f --forwardRef`, `Use React.forwardRef`)
         .option(`-i --indexPath`, `Specify the path of an index file in which the component is re-exported.`)
         .option(`-a --author <author>`, `The author name to use in the file header comments.`)

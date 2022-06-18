@@ -85,6 +85,10 @@ async function componentHandler(
         inputHintText: `Style option can only be 'scss', 'css', 'less' or 'none', please re-input:`
     });
 
+    // [Option] styleFilename
+
+    const styleFilenameOption = options.styleFilename || config.component.styleFilename || '$component';
+
     // [Option] forwardRef
     const forwardRefOption = options.forwardRef || config.component?.forwardRef;
 
@@ -160,11 +164,12 @@ async function componentHandler(
 
 
     // [Stylesheet]
-    let stylesheetPath = path.join(outDirOption, `${compName}.${styleOption}`);
+    const styleFilename = styleFilenameOption.replace('$component', compName) + '.' + styleOption;
+    let stylesheetPath = path.join(outDirOption, styleFilename);
 
     if (styleOption !== 'none' && await promptOverride(stylesheetPath) === true) {
         brandWrite();
-        logWrite(`Generating stylesheet "${green(compName)}.${magenta(styleOption)}" in "${yellow(outDirOption)}" ... `);
+        logWrite(`Generating stylesheet "${green(styleFilename)}" in "${yellow(outDirOption)}" ... `);
         try {
             await writeFileAsync(
                 stylesheetPath,
