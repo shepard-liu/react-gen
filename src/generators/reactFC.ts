@@ -8,27 +8,27 @@ export interface reactFCGeneratorConfig {
     forwardRef: boolean,
     baseElementTag: string,
     baseElementType: string,
-    baseElementAttributeType: string
 }
 
-export default function reactFCGenerator({
+export default function generateReactFC({
     baseElementTag,
-    baseElementType,
-    baseElementAttributeType,
     componentName,
     cssClass,
     cssPreprocessor,
     customCode,
     fileHeader,
     forwardRef,
-    wrapNamespace
+    wrapNamespace,
+    baseElementType,
 }: reactFCGeneratorConfig) {
 
-    const propsExtends = baseElementAttributeType
-        ? ` extends ${baseElementAttributeType}`
+    const propsExtends = baseElementTag
+        ? forwardRef
+            ? ` extends React.ComponentPropsWithRef<'${baseElementTag}'>`
+            : ` extends React.ComponentPropsWithoutRef<'${baseElementTag}'>`
         : '';
 
-    const classNameProp = baseElementAttributeType
+    const classNameProp = baseElementTag
         ? ''
         : 'className: string';
 
@@ -54,11 +54,11 @@ export namespace ${componentName} {
 
     const functionSignature = forwardRef
         ? `export const ${componentName} = React.forwardRef<${baseElementType || 'HTMLElement'}, ${propsInterfaceName}>(({
-    className,
+    className = '',
     ...otherProps
 }, ref) => {`
         : `export const ${componentName} = ({
-    className,
+    className = '',
     ...otherProps
 }: ${propsInterfaceName}): JSX.Element => {`;
 
@@ -77,7 +77,7 @@ import './${componentName}.${cssPreprocessor}';
 ${propsInterface}
 ${functionSignature}
     return (
-        <${baseElementTag} className={\`${cssClass} \${className || ''} \`}${forwardRef ? ' ref={ref} ' : ' '}{...otherProps}>
+        <${baseElementTag} className={\`${cssClass} \${className} \`}${forwardRef ? ' ref={ref} ' : ' '}{...otherProps}>
         </${baseElementTag}>
     );
 }${forwardRef ? ')' : ''};

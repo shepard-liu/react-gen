@@ -1,21 +1,22 @@
 export interface ConfigType {
-    "component": {
-        "outDir": string,
-        "wrapNamespace": boolean,
-        "style": string,
-        "forwardRef": boolean,
-        "time": boolean,
+    "component": ComponentCommandOptionType & {
         "customCode": string[],
-        "baseElement": string,
-        "indexPath": string
     },
-    "page": {
-        "sourceDir": string,
-        "style": string,
-        "time": boolean,
+    "page": PageCommandOptionType & {
         "customCode": string[]
     }
+    "icon": IconCommandOptionType & {
+        "outFilepath": string,  // Optional Argument
+        "customCode": string[], // [Configuration Only]
+
+        /**
+         * [Configuration Only] Svg file names without extension will be replaced according to the rules
+         * before validation and conversion into the icon name.
+         */
+        "replaceFilenameRules": { from: string, to: string }[],
+    },
     "author": string,
+
 }
 
 export interface ComponentCommandOptionType {
@@ -28,4 +29,28 @@ export interface ComponentCommandOptionType {
     descrip: string,
     time: boolean,
     indexPath: string,
+}
+
+export interface PageCommandOptionType {
+    outDir: string,
+    style: string,
+    author: string,
+    descrip: string,    // [Option Only]
+    time: boolean,
+}
+export interface IconCommandOptionType {
+    assetDirs: string[],
+    recursive: boolean,
+    monocolor: boolean,
+    normalize: string,
+    // watch: boolean,
+    descrip: string,
+    time: boolean,
+    threshold: number,
+    wrapNamespace: boolean,
+    indexPath: string,
+    prefixNormal: string,
+    suffixNormal: string,
+    prefixSingleColor: string,
+    suffixSingleColor: string,
 }

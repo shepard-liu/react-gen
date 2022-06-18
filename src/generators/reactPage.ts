@@ -1,10 +1,22 @@
-export default function reactPageGenerator(
+
+export interface ReactPageGeneratorConfig {
     fileHeader: string,
     pageName: string,
     cssClass: string,
-    cssPreprocessor: string
-) {
-    return `${fileHeader}
+    cssPreprocessor: string,
+    customCode: string
+}
+
+export default function generateReactPage({
+    fileHeader,
+    pageName,
+    cssClass,
+    cssPreprocessor,
+    customCode
+}) {
+    return `\
+${fileHeader}\
+${customCode}\
 import React from 'react';
 
 // Components
@@ -17,7 +29,7 @@ import './${pageName}.${cssPreprocessor}';
 export const ${pageName} = (): JSX.Element => {
     
     return (
-        <div className={\`${cssClass} \${className || ''} \`}>
+        <div className={\`${cssClass}\`}>
         </div>
     );
 };

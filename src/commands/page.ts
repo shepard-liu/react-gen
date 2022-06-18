@@ -1,40 +1,38 @@
+
+import { ComponentCommandOptionType, ConfigType, PageCommandOptionType } from '../types';
 import commander from 'commander';
-
-//@ts-ignore
-import { Input } from 'enquirer';
-
-import { ComponentCommandOptionType, ConfigType } from '../types';
-import { brandWrite, logWrite, successWrite } from '../utils/chalks';
-import { normalizeComponentName } from '../utils/naming';
-import { checkPathAsync, writeFileAsync } from '../utils/node';
-import { elementTypeMap } from '../utils/intrisicElementTypes';
-import { errorUnexpected } from '../utils/errorHandler';
 import Debug from '../utils/debugger';
-import generateReactFC from '../generators/reactFC';
-import path from 'path';
-import generateStylesheet from '../generators/stylesheet';
-import { green, magenta, yellow } from 'chalk';
+import { ensureDirectory, ensureName, ensureStyle, promptOverride, parseCustomCodeOption } from '../utils/validators';
 import { exit } from 'process';
-import { ensureDirectory, ensureName, ensureSatisfyOrEmpty, ensureStyle, promptOverride, parseCustomCodeOption } from '../utils/validators';
+import { normalizeComponentName } from '../utils/naming';
 import generateFileHeader from '../generators/fileHeader';
-import { updateIndex } from './sharedUtils';
+import { brandWrite, logWrite, successWrite } from '../utils/chalks';
+import { green, magenta, yellow } from 'chalk';
+import { writeFileAsync } from '../utils/node';
+import path from 'path';
+import generateReactPage from '../generators/reactPage';
+import { errorUnexpected } from '../utils/errorHandler';
+import generateStylesheet from '../generators/stylesheet';
 
-async function componentHandler(
+async function pageHandler(
     config: Partial<ConfigType>,
     rawName: string,
-    options: Partial<ComponentCommandOptionType>,
+    options: Partial<PageCommandOptionType>,
     command: commander.Command) {
 
     Debug(() => {
         console.log("argument:", rawName);
         console.log("options:", options);
         console.log("config:", config);
-    })
+    });
 
-    // [Argument] Name
+    /**
+     * * Check Argument
+     */
+
+    // [Argument] name
     let nameArg = rawName;
 
-    // Validate component name
     nameArg = await ensureName({
         initial: nameArg,
         errorHint: true,
@@ -59,23 +57,6 @@ async function componentHandler(
         outDirOption = result.dir;
     }
 
-    // [Option] baseElement
-    let baseElementOption = options.baseElement || config.component?.baseElement || '';
-    let baseElementType = '';
-
-    baseElementOption = await ensureSatisfyOrEmpty({
-        initial: baseElementOption,
-        inputHintText: 'Please re-input or leave it blank:',
-        invalidHintText: '"$value" is not valid HTML element.',
-        condition: async (value) => {
-            baseElementType = elementTypeMap[value];
-            return baseElementType !== undefined;
-        }
-    })
-
-    // [Option] wrapNamespace
-    const wrapNamespaceOption = options.wrapNamespace || config.component?.wrapNamespace;
-
     // [Option] style
     let styleOption = options.style || config.component?.style || 'css';
 
@@ -83,20 +64,6 @@ async function componentHandler(
         initial: styleOption,
         errorHint: true,
         inputHintText: `Style option can only be 'scss', 'css', 'less' or 'none', please re-input:`
-    });
-
-    // [Option] forwardRef
-    const forwardRefOption = options.forwardRef || config.component?.forwardRef;
-
-    // [Option] indexPath
-    let indexPathOption = options.indexPath || config.component?.indexPath || '';
-    indexPathOption = await ensureSatisfyOrEmpty({
-        initial: indexPathOption,
-        inputHintText: 'Please re-input the index filepath or leave it blank:',
-        invalidHintText: 'Unable to access the index file path "$value"',
-        condition: async (value) => {
-            return await checkPathAsync(value);
-        }
     });
 
     // [Option] author
@@ -113,7 +80,7 @@ async function componentHandler(
     const customCode = parseCustomCodeOption(customCodeOption);
 
     /**
-     * * Pre-process information
+     * * Preprocess information
      */
 
     const [compName, cssClass] = normalizeComponentName(nameArg);
@@ -128,28 +95,25 @@ async function componentHandler(
         : '';
 
     /**
-     * * Writing files
+     * * Write files
      */
 
-    // [React.FC]
-    const componentFilepath = path.join(outDirOption, `${compName}.tsx`);
+    // [React Page]
+
+    let componentFilepath = path.join(outDirOption, `${compName}.tsx`);
 
     if (await promptOverride(componentFilepath) === true) {
         brandWrite();
         logWrite(`Generating component "${green(compName)}${magenta('.tsx')}" in "${yellow(outDirOption)}" ... `);
         try {
             await writeFileAsync(
-                componentFilepath,
-                generateReactFC({
+                path.join(outDirOption, `${compName}.tsx`),
+                generateReactPage({
                     fileHeader,
-                    baseElementTag: baseElementOption,
-                    baseElementType,
-                    componentName: compName,
+                    pageName: nameArg,
                     cssClass,
                     cssPreprocessor: styleOption,
                     customCode,
-                    forwardRef: forwardRefOption,
-                    wrapNamespace: wrapNamespaceOption
                 })
             );
         } catch (err) {
@@ -158,11 +122,10 @@ async function componentHandler(
         successWrite('successful\n');
     }
 
+    // [Stylesheet]    
+    const stylesheetPath = path.join(outDirOption, `${compName}.${styleOption}`);
 
-    // [Stylesheet]
-    let stylesheetPath = path.join(outDirOption, `${compName}.${styleOption}`);
-
-    if (styleOption !== 'none' && await promptOverride(stylesheetPath) === true) {
+    if (styleOption !== 'none' && await promptOverride(stylesheetPath)) {
         brandWrite();
         logWrite(`Generating stylesheet "${green(compName)}.${magenta(styleOption)}" in "${yellow(outDirOption)}" ... `);
         try {
@@ -176,10 +139,6 @@ async function componentHandler(
         successWrite('successful\n');
     }
 
-    // [Index]
-    if (indexPathOption)
-        await updateIndex(indexPathOption, outDirOption, compName);
-
 }
 
-export default componentHandler;
+export default pageHandler;

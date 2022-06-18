@@ -1,4 +1,4 @@
-export default function stylesheetGenerator(
+export default function generateStylesheet(
     cssClass: string
 ) {
     return `\
