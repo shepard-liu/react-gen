@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-// process.env.NODE_ENV = 'production';
+process.env.NODE_ENV = 'production';
 
 import { program } from 'commander';
 import componentHandler from './commands/component';

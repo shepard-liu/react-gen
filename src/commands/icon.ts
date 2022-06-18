@@ -20,7 +20,6 @@ import loadingIcon from '../generators/__loading';
 import missingIcon from '../generators/__missing';
 import readline from 'readline';
 import isValidFilename from 'valid-filename';
-import svgoConfigReact from '../svgo/svgo.react.config';
 
 async function iconHandler(
     config: Partial<ConfigType>,
@@ -313,7 +312,6 @@ ignore conversion of these files and continue?`
  : ${++processedCount} / ${monocolorOption ? svgPathsMap.size * 2 : svgPathsMap.size}`);
                     // Do optimization
                     let optimizedSvg = optimize(__originalSvgBuffer, __svgoConfig) as OptimizedSvg;
-                    optimizedSvg = optimize(optimizedSvg.data, svgoConfigReact) as OptimizedSvg;
 
                     if (optimizedSvg.error !== undefined) {
                         error(`Faild to process svg file "${bold(filepath)}".\n`);

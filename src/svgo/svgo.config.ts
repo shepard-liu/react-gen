@@ -16,7 +16,7 @@ function getSvgoConfigObject({
     modifySizeParams,
 }: Partial<SvgoConfigParamsType>): OptimizeOptions {
     return {
-        multipass: true, // If enabled, the converted JSX property will be removed
+        multipass: false, // If enabled, the converted JSX property will be removed
         plugins: [
             // set of built-in plugins enabled by default
             {
@@ -45,6 +45,7 @@ function getSvgoConfigObject({
             Object.assign({}, modifySize, {
                 params: modifySizeParams
             }) as any,
+            attrsToJSX
         ],
     };
 }
