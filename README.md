@@ -1,2 +1,4 @@
 # react-gen
-Component generator CLI tool for React.js
+Component generator CLI tool for React.js.
+## Todo
+Docs.
