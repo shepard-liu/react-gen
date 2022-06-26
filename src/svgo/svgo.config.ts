@@ -26,7 +26,8 @@ function getSvgoConfigObject({
                         convertColors: false,   // Use this plugin later
                         inlineStyles: {
                             onlyMatchedOnce: false,
-                        }
+                        },
+                        removeViewBox: false,
                     }
                 }
             },

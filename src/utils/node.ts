@@ -14,6 +14,24 @@ export async function checkPathAsync(path: fs.PathLike): Promise<boolean> {
     })
 }
 
+export async function checkFileAsync(path: fs.PathLike): Promise<boolean> {
+    return new Promise((resolve) => {
+        fs.stat(path, (err, stat) => {
+            if (err) resolve(false);
+            else resolve(stat.isFile());
+        })
+    })
+}
+
+export async function checkDirAsync(path: fs.PathLike): Promise<boolean> {
+    return new Promise((resolve) => {
+        fs.stat(path, (err, stat) => {
+            if (err) resolve(false);
+            else resolve(stat.isDirectory());
+        })
+    })
+}
+
 export const createDirectoryAsync = fs.promises.mkdir;
 
 
@@ -36,7 +54,7 @@ async function loopOverDirectory(paths: string[], dirname: string, condition: (p
         if (type.isFile() && condition(file)) {
             paths.push(filepath);
         } else if (recursive && type.isDirectory()) {
-            await loopOverDirectory(paths, filepath, condition);
+            await loopOverDirectory(paths, filepath, condition, recursive);
         }
     }
 }

@@ -26,7 +26,7 @@ export interface ComponentCommandOptionType {
     style: string,
     forwardRef: boolean,
     author: string,
-    descrip: string,
+    descrip: string,    // [Option Only]
     time: boolean,
     styleFilename: string,
     indexPath: string,
@@ -36,7 +36,8 @@ export interface PageCommandOptionType {
     outDir: string,
     style: string,
     author: string,
-    descrip: string,    // [Option Only]
+    descrip: string,    // [Option Only]    
+    styleFilename: string,
     time: boolean,
 }
 export interface IconCommandOptionType {

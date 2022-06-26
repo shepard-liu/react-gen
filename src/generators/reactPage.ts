@@ -4,7 +4,8 @@ export interface ReactPageGeneratorConfig {
     pageName: string,
     cssClass: string,
     cssPreprocessor: string,
-    customCode: string
+    customCode: string,
+    styleFilenameNoExt: string,
 }
 
 export default function generateReactPage({
@@ -12,11 +13,11 @@ export default function generateReactPage({
     pageName,
     cssClass,
     cssPreprocessor,
+    styleFilenameNoExt,
     customCode
 }) {
     return `\
 ${fileHeader}\
-${customCode}\
 import React from 'react';
 
 // Components
@@ -24,7 +25,9 @@ import React from 'react';
 // Interfaces
 
 // Stylesheet
-import './${pageName}.${cssPreprocessor}';
+import './${styleFilenameNoExt}.${cssPreprocessor}';
+
+${customCode}\
 
 export const ${pageName} = (): JSX.Element => {
     

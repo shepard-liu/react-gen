@@ -13,9 +13,7 @@ export default {
                     for (const attrKey in attributes) {
                         const propKey = attributesToProps[attrKey];
                         if (propKey !== undefined) {
-                            // console.log(`${attrKey} - ${propKey}`);
                             attributes[propKey] = attributes[attrKey];
-                            // console.log(attributes[propKey]);
                             delete attributes[attrKey];
                         }
                     }

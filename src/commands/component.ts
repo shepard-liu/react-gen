@@ -6,18 +6,17 @@ import { Input } from 'enquirer';
 import { ComponentCommandOptionType, ConfigType } from '../types';
 import { brandWrite, logWrite, successWrite } from '../utils/chalks';
 import { normalizeComponentName } from '../utils/naming';
-import { checkPathAsync, writeFileAsync } from '../utils/node';
+import { checkFileAsync, writeFileAsync } from '../utils/node';
 import { elementTypeMap } from '../utils/intrisicElementTypes';
 import { errorUnexpected } from '../utils/errorHandler';
 import Debug from '../utils/debugger';
 import generateReactFC from '../generators/reactFC';
 import path from 'path';
-import generateStylesheet from '../generators/stylesheet';
 import { green, magenta, yellow } from 'chalk';
 import { exit } from 'process';
-import { ensureDirectory, ensureName, ensureSatisfyOrEmpty, ensureStyle, promptOverride, parseCustomCodeOption } from '../utils/validators';
+import { ensureDirectory, ensureName, ensureSatisfyOrEmpty, ensureStyle, promptOverrideIfExist, parseCustomCodeOption } from '../utils/validators';
 import generateFileHeader from '../generators/fileHeader';
-import { updateIndex } from './sharedUtils';
+import { updateIndex, writeStylesheet } from './sharedUtils';
 
 async function componentHandler(
     config: Partial<ConfigType>,
@@ -86,7 +85,6 @@ async function componentHandler(
     });
 
     // [Option] styleFilename
-
     const styleFilenameOption = options.styleFilename || config.component.styleFilename || '$component';
 
     // [Option] forwardRef
@@ -99,7 +97,7 @@ async function componentHandler(
         inputHintText: 'Please re-input the index filepath or leave it blank:',
         invalidHintText: 'Unable to access the index file path "$value"',
         condition: async (value) => {
-            return await checkPathAsync(value);
+            return await checkFileAsync(value);
         }
     });
 
@@ -114,7 +112,6 @@ async function componentHandler(
 
     // [Option] customCode
     const customCodeOption = config.component.customCode || [''];
-    const customCode = parseCustomCodeOption(customCodeOption);
 
     /**
      * * Pre-process information
@@ -124,12 +121,16 @@ async function componentHandler(
 
     const fileHeader = (authorOption || descripOption || timeOption)
         ? generateFileHeader({
-            componentName: nameArg,
+            componentName: compName,
             author: authorOption,
             description: descripOption,
             time: timeOption,
         })
         : '';
+
+    const styleFilename = styleFilenameOption.replace('$component', compName);
+
+    const customCode = parseCustomCodeOption(customCodeOption, compName);
 
     /**
      * * Writing files
@@ -138,7 +139,7 @@ async function componentHandler(
     // [React.FC]
     const componentFilepath = path.join(outDirOption, `${compName}.tsx`);
 
-    if (await promptOverride(componentFilepath) === true) {
+    if (await promptOverrideIfExist(componentFilepath) === true) {
         brandWrite();
         logWrite(`Generating component "${green(compName)}${magenta('.tsx')}" in "${yellow(outDirOption)}" ... `);
         try {
@@ -150,6 +151,7 @@ async function componentHandler(
                     baseElementType,
                     componentName: compName,
                     cssClass,
+                    styleFilenameNoExt: styleFilename,
                     cssPreprocessor: styleOption,
                     customCode,
                     forwardRef: forwardRefOption,
@@ -164,22 +166,8 @@ async function componentHandler(
 
 
     // [Stylesheet]
-    const styleFilename = styleFilenameOption.replace('$component', compName) + '.' + styleOption;
-    let stylesheetPath = path.join(outDirOption, styleFilename);
-
-    if (styleOption !== 'none' && await promptOverride(stylesheetPath) === true) {
-        brandWrite();
-        logWrite(`Generating stylesheet "${green(styleFilename)}" in "${yellow(outDirOption)}" ... `);
-        try {
-            await writeFileAsync(
-                stylesheetPath,
-                generateStylesheet(cssClass)
-            )
-        } catch (err) {
-            errorUnexpected(err);
-        }
-        successWrite('successful\n');
-    }
+    if (styleOption !== 'none')
+        await writeStylesheet(styleFilename, compName, styleOption, outDirOption, cssClass);
 
     // [Index]
     if (indexPathOption)

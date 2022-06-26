@@ -1,8 +1,8 @@
 
-import { ComponentCommandOptionType, ConfigType, PageCommandOptionType } from '../types';
+import { ConfigType, PageCommandOptionType } from '../types';
 import commander from 'commander';
 import Debug from '../utils/debugger';
-import { ensureDirectory, ensureName, ensureStyle, promptOverride, parseCustomCodeOption } from '../utils/validators';
+import { ensureDirectory, ensureName, ensureStyle, promptOverrideIfExist, parseCustomCodeOption } from '../utils/validators';
 import { exit } from 'process';
 import { normalizeComponentName } from '../utils/naming';
 import generateFileHeader from '../generators/fileHeader';
@@ -12,7 +12,7 @@ import { writeFileAsync } from '../utils/node';
 import path from 'path';
 import generateReactPage from '../generators/reactPage';
 import { errorUnexpected } from '../utils/errorHandler';
-import generateStylesheet from '../generators/stylesheet';
+import { writeStylesheet } from './sharedUtils';
 
 async function pageHandler(
     config: Partial<ConfigType>,
@@ -44,7 +44,7 @@ async function pageHandler(
      */
 
     // [Option] directory
-    let outDirOption = options.outDir || config.component?.outDir || '';
+    let outDirOption = options.outDir || config.page?.outDir || '';
     {
         const result = await ensureDirectory({
             initial: outDirOption,
@@ -58,7 +58,7 @@ async function pageHandler(
     }
 
     // [Option] style
-    let styleOption = options.style || config.component?.style || 'css';
+    let styleOption = options.style || config.page?.style || 'css';
 
     styleOption = await ensureStyle({
         initial: styleOption,
@@ -73,11 +73,13 @@ async function pageHandler(
     const descripOption = options.descrip || '';
 
     // [Option] time
-    const timeOption = options.time || config.component?.time;
+    const timeOption = options.time || config.page?.time;
+
+    // [Option] styleFilename
+    const styleFilenameOption = options.styleFilename || config.page?.styleFilename;
 
     // [Option] customCode
-    const customCodeOption = config.component.customCode || [''];
-    const customCode = parseCustomCodeOption(customCodeOption);
+    const customCodeOption = config.page?.customCode || [''];
 
     /**
      * * Preprocess information
@@ -87,12 +89,16 @@ async function pageHandler(
 
     const fileHeader = (authorOption || descripOption || timeOption)
         ? generateFileHeader({
-            componentName: nameArg,
+            componentName: compName,
             author: authorOption,
             description: descripOption,
             time: timeOption,
         })
         : '';
+
+    const styleFilename = styleFilenameOption.replace('$component', compName);
+
+    const customCode = parseCustomCodeOption(customCodeOption, compName);
 
     /**
      * * Write files
@@ -102,7 +108,7 @@ async function pageHandler(
 
     let componentFilepath = path.join(outDirOption, `${compName}.tsx`);
 
-    if (await promptOverride(componentFilepath) === true) {
+    if (await promptOverrideIfExist(componentFilepath) === true) {
         brandWrite();
         logWrite(`Generating component "${green(compName)}${magenta('.tsx')}" in "${yellow(outDirOption)}" ... `);
         try {
@@ -110,7 +116,8 @@ async function pageHandler(
                 path.join(outDirOption, `${compName}.tsx`),
                 generateReactPage({
                     fileHeader,
-                    pageName: nameArg,
+                    pageName: compName,
+                    styleFilenameNoExt: styleFilename,
                     cssClass,
                     cssPreprocessor: styleOption,
                     customCode,
@@ -123,21 +130,8 @@ async function pageHandler(
     }
 
     // [Stylesheet]    
-    const stylesheetPath = path.join(outDirOption, `${compName}.${styleOption}`);
-
-    if (styleOption !== 'none' && await promptOverride(stylesheetPath)) {
-        brandWrite();
-        logWrite(`Generating stylesheet "${green(compName)}.${magenta(styleOption)}" in "${yellow(outDirOption)}" ... `);
-        try {
-            await writeFileAsync(
-                stylesheetPath,
-                generateStylesheet(cssClass)
-            )
-        } catch (err) {
-            errorUnexpected(err);
-        }
-        successWrite('successful\n');
-    }
+    if (styleOption !== 'none')
+        await writeStylesheet(styleFilename, compName, styleOption, outDirOption, cssClass);
 
 }
 

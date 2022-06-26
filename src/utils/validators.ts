@@ -237,7 +237,7 @@ export async function ensureName({
 
 
 // * Prompt user whether to override if exists. Returns true if not exists.
-export async function promptOverride(filepath: string) {
+export async function promptOverrideIfExist(filepath: string) {
 
     if (await checkPathAsync(filepath) === false) return true;
 
@@ -250,7 +250,7 @@ export async function promptOverride(filepath: string) {
     return ans;
 }
 
-export function parseCustomCodeOption(customCode: any): string {
+export function parseCustomCodeOption(customCode: any, componentName: string): string {
     let res = true;
     if (!Array.isArray(customCode)) res = false;
     for (const elem of customCode) {
@@ -265,7 +265,7 @@ export function parseCustomCodeOption(customCode: any): string {
         exit(-1);
     }
 
-    return customCode.join('\n');
+    return customCode.join('\n').replace('$component', componentName);
 }
 
 export function parseReplaceFilenameRulesOption(replaceFilenameRules: any): { from: RegExp, to: string }[] {

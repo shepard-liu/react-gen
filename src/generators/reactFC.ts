@@ -4,6 +4,7 @@ export interface reactFCGeneratorConfig {
     componentName: string,
     cssClass: string,
     cssPreprocessor: string,
+    styleFilenameNoExt: string,
     wrapNamespace: boolean,
     forwardRef: boolean,
     baseElementTag: string,
@@ -14,6 +15,7 @@ export default function generateReactFC({
     baseElementTag,
     componentName,
     cssClass,
+    styleFilenameNoExt,
     cssPreprocessor,
     customCode,
     fileHeader,
@@ -65,7 +67,6 @@ export namespace ${componentName} {
     // Template
     return `\
 ${fileHeader}\
-${customCode}\
 import React from 'react';
 
 // ----- Components ----- //
@@ -73,7 +74,10 @@ import React from 'react';
 // ----- Interfaces ----- //
 
 // ----- Stylesheet ----- //
-import './${componentName}.${cssPreprocessor}';
+import './${styleFilenameNoExt}.${cssPreprocessor}';
+
+${customCode}\
+
 ${propsInterface}
 ${functionSignature}
     return (

@@ -3,9 +3,9 @@ import commander from 'commander';
 import Debug from "../utils/debugger";
 import { ensureFilepath, ensureSatisfy, ensureSatisfyOrEmpty, parseCustomCodeOption, parseReplaceFilenameRulesOption } from "../utils/validators";
 import { exit } from "process";
-import { checkPathAsync, createDirectoryAsync, gatherFilesAsync, readFileAsync, removeDirectoryIfExist, writeFileAsync } from "../utils/node";
-import { optimize, loadConfig, OptimizeOptions, OptimizedSvg } from 'svgo';
-import { brandWrite, error, log, logWrite, newLines, successWrite, warn } from "../utils/chalks";
+import { checkDirAsync, checkFileAsync, createDirectoryAsync, gatherFilesAsync, readFileAsync, removeDirectoryIfExist, writeFileAsync } from "../utils/node";
+import { optimize, OptimizeOptions, OptimizedSvg } from 'svgo';
+import { brandWrite, error, log, logWrite, successWrite, warn } from "../utils/chalks";
 import { red, green, blue, yellow, bold, magenta } from 'chalk';
 import fs from 'fs';
 import path from "path";
@@ -70,7 +70,7 @@ async function iconHandler(
     {
         const accessableAssetDirs: string[] = [];
         for (const dir of assetDirsOption) {
-            if (await checkPathAsync(dir) === true)
+            if (await checkDirAsync(dir) === true)
                 accessableAssetDirs.push(dir);
         }
         assetDirsOption = accessableAssetDirs;
@@ -146,7 +146,6 @@ async function iconHandler(
     // [Option] customCode
 
     const customCodeOption = config.icon?.customCode || [''];
-    const customCode = parseCustomCodeOption(customCodeOption);
 
     // [Option] prefixNormal
 
@@ -176,7 +175,7 @@ async function iconHandler(
         inputHintText: 'Please re-input the index filepath or leave it blank:',
         invalidHintText: 'Unable to access the index file path "$value"',
         condition: async (value) => {
-            return await checkPathAsync(value);
+            return await checkFileAsync(value);
         }
     });
 
@@ -206,6 +205,8 @@ async function iconHandler(
 
     // Get component name and CSS class
     const [componentName, cssClass] = normalizeComponentName(fileBasename);
+
+    const customCode = parseCustomCodeOption(customCodeOption, componentName);
 
     // Get component directory
     const outDir = path.dirname(outFilepathArg);    // Ensured existence
@@ -327,8 +328,6 @@ ignore conversion of these files and continue?`
                     originalSizeInTotal += __originalSvgBuffer.length;
                     optimizedSizeInTotal += optimizedSvg.data.length;
 
-                    // Omit the "missing" icon and the "loading" icon.
-                    if (['__missing', '__loading'].includes(name) === true) return;
 
                     // Determine whether to load lazily
                     if (optimizedSvg.data.length > thresholdOption)
@@ -343,12 +342,11 @@ ignore conversion of these files and continue?`
                     prefixNormalOption + name + suffixNormalOption,
                     svgoConfigNormal);
 
-                if (monocolorOption && ['__missing', '__loading'].includes(name) === false)
-                    await optimizeAndExport(
-                        originialSvgBuffer,
-                        iconsOutDir,
-                        prefixMonocolorOption + name + suffixMonocolorOption,
-                        svgoConfigMono);
+                await optimizeAndExport(
+                    originialSvgBuffer,
+                    iconsOutDir,
+                    prefixMonocolorOption + name + suffixMonocolorOption,
+                    svgoConfigMono);
             } catch (err) {
                 errorUnexpected(err);
             }
