@@ -40,7 +40,13 @@
   "devDependencies": {
     "@types/chalk": "^2.2.0",
     "@types/node": "^17.0.42",
-    "@types/svgo": "^2.6.3"
+    "@types/svgo": "^2.6.3",
+    "cz-conventional-changelog": "^3.3.0"
   },
-  "react-gen": {}
+  "react-gen": {},
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  }
 }

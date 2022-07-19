@@ -76,7 +76,7 @@ async function pageHandler(
     const timeOption = options.time || config.page?.time;
 
     // [Option] styleFilename
-    const styleFilenameOption = options.styleFilename || config.page?.styleFilename;
+    const styleFilenameOption = options.styleFilename || config.page?.styleFilename || '$component';
 
     // [Option] customCode
     const customCodeOption = config.page?.customCode || [''];
